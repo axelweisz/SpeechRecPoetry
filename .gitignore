@@ -1,0 +1,35 @@
+# Unity generated
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# Unity auto-generated meta files (keep .meta for tracked assets, ignore unneeded ones)
+*.pidb.meta
+*.pdb.meta
+
+# API key — never commit
+Assets/Resources/Config/DeepgramConfig.asset
+Assets/Resources/Config/DeepgramConfig.asset.meta
+
+# VS / Rider
+.vs/
+.idea/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+
+# macOS
+.DS_Store
+*.DS_Store
+
+# JetBrains Rider
+.idea/
+
+# Visual Studio Code
+.vscode/
