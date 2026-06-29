@@ -53,6 +53,21 @@ public class DeepgramClient : MonoBehaviour
             await _ws.Send(chunk);
     }
 
+    public async void SetLanguage(string languageCode)
+    {
+        if (config.language == languageCode) return;
+        config.language = languageCode;
+        Debug.Log($"[Deepgram] Switching language to: {languageCode}");
+
+        if (_ws != null && _ws.State == WebSocketState.Open)
+        {
+            await _ws.SendText("{\"type\":\"CloseStream\"}");
+            await _ws.Close();
+        }
+
+        ConnectAsync();
+    }
+
     private async void OnDestroy()
     {
         MicrophoneCapture.OnAudioChunk -= SendAudioChunk;
