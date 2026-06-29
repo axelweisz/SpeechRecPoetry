@@ -1,3 +1,4 @@
+using System.Collections;
 using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
@@ -9,6 +10,7 @@ public class SimpleReplaceDisplay : MonoBehaviour
     [SerializeField] private Color textColor  = Color.white;
 
     private TextMeshPro _tmp;
+    private Coroutine   _sequenceRoutine;
 
     private void Awake()
     {
@@ -25,7 +27,11 @@ public class SimpleReplaceDisplay : MonoBehaviour
     }
 
     private void OnEnable()  => DeepgramClient.OnTranscriptReceived += HandleTranscript;
-    private void OnDisable() => DeepgramClient.OnTranscriptReceived -= HandleTranscript;
+    private void OnDisable()
+    {
+        DeepgramClient.OnTranscriptReceived -= HandleTranscript;
+        if (_sequenceRoutine != null) StopCoroutine(_sequenceRoutine);
+    }
 
     private void HandleTranscript(string json)
     {
@@ -36,10 +42,27 @@ public class SimpleReplaceDisplay : MonoBehaviour
         if (response == null || !response.is_final) return;
         if (response.channel?.alternatives == null || response.channel.alternatives.Length == 0) return;
 
-        string transcript = response.channel.alternatives[0].transcript;
-        if (!string.IsNullOrWhiteSpace(transcript))
-            _tmp.text = transcript;
+        Word[] words = response.channel.alternatives[0].words;
+        if (words == null || words.Length == 0) return;
+
+        if (_sequenceRoutine != null) StopCoroutine(_sequenceRoutine);
+        _sequenceRoutine = StartCoroutine(ShowWordsSequenced(words));
     }
+
+    private IEnumerator ShowWordsSequenced(Word[] words)
+    {
+        float baseTime = words[0].start;
+
+        for (int i = 0; i < words.Length; i++)
+        {
+            float delay = words[i].start - baseTime;
+            if (i > 0) yield return new WaitForSeconds(delay - (words[i - 1].start - baseTime));
+
+            _tmp.text = words[i].word;
+        }
+    }
+
+    // --- JSON model ---
 
     private class DeepgramResponse
     {
@@ -55,5 +78,13 @@ public class SimpleReplaceDisplay : MonoBehaviour
     private class Alternative
     {
         public string transcript;
+        public Word[] words;
+    }
+
+    private class Word
+    {
+        public string word;
+        public float  start;
+        public float  end;
     }
 }
